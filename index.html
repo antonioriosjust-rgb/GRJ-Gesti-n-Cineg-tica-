@@ -1,0 +1,117 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#173d2b">
+<title>GRJ Gestión Cinegética</title>
+<style>
+:root{--verde:#173d2b;--oro:#c8a75b;--fondo:#f3f5f0;--blanco:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--fondo);color:#202820}
+header{background:var(--verde);color:white;padding:25px 18px;border-bottom:4px solid var(--oro)}
+.marca{color:var(--oro);font-size:12px;letter-spacing:3px;font-weight:bold}
+h1{margin:8px 0;font-size:25px}
+header p{margin:0;color:#dce7dd;font-size:14px}
+main{max-width:900px;margin:auto;padding:18px}
+.bienvenida{background:white;padding:20px;border-radius:14px;margin-bottom:18px;box-shadow:0 2px 8px #0000000b}
+.bienvenida h2{margin:0 0 8px;color:var(--verde)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tarjeta{background:white;border:1px solid #e0e5dc;border-radius:13px;padding:17px;text-align:left;cursor:pointer;min-height:115px}
+.tarjeta:active{transform:scale(.98)}
+.icono{font-size:27px}
+.tarjeta h3{margin:10px 0 5px;color:var(--verde);font-size:16px}
+.tarjeta p{margin:0;color:#687268;font-size:12px}
+.panel{background:white;border-radius:14px;padding:18px;margin-top:18px}
+.panel h2{color:var(--verde);margin-top:0}
+label{display:block;font-size:13px;font-weight:bold;margin-top:13px}
+input,textarea,select{width:100%;padding:12px;margin-top:6px;border:1px solid #ccd4c9;border-radius:8px;font-size:15px;background:white}
+button.primario{margin-top:15px;background:var(--verde);color:white;border:0;padding:13px 16px;border-radius:8px;font-weight:bold;width:100%;font-size:15px}
+.secundario{background:#e9eee7;border:0;padding:10px 12px;border-radius:8px;margin-top:8px}
+.registro{padding:12px 0;border-bottom:1px solid #e7eae4;overflow-wrap:anywhere}
+.pequeno{font-size:12px;color:#687268}
+footer{text-align:center;padding:25px;font-size:12px;color:#687268}
+@media(min-width:600px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <div class="marca">GRJ · GESTIÓN RURAL</div>
+  <h1>Gestión Cinegética</h1>
+  <p>Tu coto, tus jornadas, toda la gestión en un mismo lugar.</p>
+</header>
+<main>
+  <section class="bienvenida">
+    <h2>Bienvenido a GRJ</h2>
+    <p>Organiza la información de tus cotos de caza de forma sencilla desde el móvil.</p>
+    <span class="pequeno">Versión inicial · Andalucía</span>
+  </section>
+
+  <section class="grid">
+    <button class="tarjeta" onclick="abrir('cotos')"><span class="icono">🌳</span><h3>Mis cotos</h3><p>Datos y localización de los terrenos.</p></button>
+    <button class="tarjeta" onclick="abrir('jornadas')"><span class="icono">🦌</span><h3>Jornadas de caza</h3><p>Registra fechas y participantes.</p></button>
+    <button class="tarjeta" onclick="abrir('capturas')"><span class="icono">📋</span><h3>Especies y capturas</h3><p>Anota especies y cantidades.</p></button>
+    <button class="tarjeta" onclick="abrir('puestos')"><span class="icono">📍</span><h3>Puestos y zonas</h3><p>Guarda referencias de tus puestos.</p></button>
+    <button class="tarjeta" onclick="abrir('gastos')"><span class="icono">💶</span><h3>Gastos e ingresos</h3><p>Control básico de cuentas.</p></button>
+    <button class="tarjeta" onclick="abrir('informes')"><span class="icono">📊</span><h3>Informes y copias</h3><p>Consulta y exporta tus registros.</p></button>
+  </section>
+
+  <section id="panel" class="panel" hidden></section>
+  <section id="lista" class="panel">
+    <h2>Actividad reciente</h2>
+    <p class="pequeno">Aquí aparecerán los registros guardados en este dispositivo.</p>
+    <div id="registros"></div>
+  </section>
+</main>
+<footer>GRJ GESTIÓN CINEGÉTICA · Proyecto en desarrollo</footer>
+<script>
+const nombres={cotos:"Mis cotos",jornadas:"Jornadas de caza",capturas:"Especies y capturas",puestos:"Puestos y zonas",gastos:"Gastos e ingresos"};
+let datos=JSON.parse(localStorage.getItem("grj_datos")||"[]");
+function abrir(tipo){
+ const p=document.getElementById("panel");
+ p.hidden=false;
+ if(tipo==="informes"){
+ p.innerHTML='<h2>Informes y copias</h2><p>Descarga una copia de tus datos guardados en este dispositivo.</p><button class="primario" onclick="exportar()">Exportar copia JSON</button><button class="secundario" onclick="window.print()">Imprimir / guardar informe PDF</button>';
+ }else{
+ let campos={
+ cotos:[["Nombre del coto","nombre","text"],["Municipio","municipio","text"],["Provincia","provincia","text"],["Matrícula del coto (si procede)","matricula","text"],["Observaciones","observaciones","textarea"]],
+ jornadas:[["Coto","coto","text"],["Fecha","fecha","date"],["Modalidad","modalidad","text"],["Participantes","participantes","text"],["Notas","notas","textarea"]],
+ capturas:[["Coto","coto","text"],["Fecha","fecha","date"],["Especie","especie","text"],["Cantidad","cantidad","number"],["Observaciones","observaciones","textarea"]],
+ puestos:[["Coto","coto","text"],["Nombre del puesto o zona","nombre","text"],["Ubicación o coordenadas","ubicacion","text"],["Notas","notas","textarea"]],
+ gastos:[["Coto","coto","text"],["Fecha","fecha","date"],["Concepto","concepto","text"],["Tipo","tipo","select"],["Importe (€)","importe","number"],["Notas","notas","textarea"]]
+ }[tipo];
+ let html='<h2>'+nombres[tipo]+'</h2><form id="formulario">';
+ campos.forEach(c=>{
+ html+='<label>'+c[0];
+ if(c[2]==="textarea")html+='<textarea name="'+c[1]+'" rows="3"></textarea>';
+ else if(c[2]==="select")html+='<select name="'+c[1]+'"><option>Gasto</option><option>Ingreso</option></select>';
+ else html+='<input name="'+c[1]+'" type="'+c[2]+'" '+(c[2]==="number"?'min="0" step="0.01"':'')+'>';
+ html+='</label>';
+ });
+ html+='<button class="primario" type="submit">Guardar registro</button></form>';
+ p.innerHTML=html;
+ document.getElementById("formulario").onsubmit=e=>{
+ e.preventDefault();
+ let obj={tipo,fechaGuardado:new Date().toLocaleString("es-ES")};
+ new FormData(e.target).forEach((v,k)=>obj[k]=v);
+ datos.unshift(obj);localStorage.setItem("grj_datos",JSON.stringify(datos));
+ mostrar();p.hidden=true;document.getElementById("lista").scrollIntoView({behavior:"smooth"});
+ };
+ }
+ p.scrollIntoView({behavior:"smooth"});
+}
+function mostrar(){
+ document.getElementById("registros").innerHTML=datos.length?datos.map((d,i)=>'<div class="registro"><strong>'+esc(nombres[d.tipo]||d.tipo)+'</strong><br>'+esc(d.nombre||d.especie||d.concepto||d.modalidad||d.coto||"Registro")+'<br><span class="pequeno">'+esc(d.fecha||d.fechaGuardado||"")+'</span><br><button class="secundario" onclick="borrar('+i+')">Eliminar</button></div>').join(""):'<p class="pequeno">Todavía no hay registros.</p>';
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function borrar(i){if(confirm("¿Eliminar este registro?")){datos.splice(i,1);localStorage.setItem("grj_datos",JSON.stringify(datos));mostrar();}}
+function exportar(){
+ const blob=new Blob([JSON.stringify(datos,null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="GRJ-copia-datos.json";a.click();URL.revokeObjectURL(a.href);
+}
+mostrar();
+</script>
+</body>
+</html>
+```
